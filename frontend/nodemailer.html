@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Sender</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="qr-code.html">QR Code</a></li>
+            <li><a href="nodemailer.html">Email</a></li>
+            <li><a href="bmi.html">BMI</a></li>
+            <li><a href="weather.html">Weather</a></li>
+            <li><a href="crud.html">CRUD</a></li>
+            <li><a href="#" id="logoutBtn">Logout</a></li>
+        </ul>
+    </nav>
+    <div class="container">
+        <h1>Email Sender</h1>
+        <form id="emailForm">
+            <input type="email" id="to" placeholder="To" required>
+            <input type="text" id="subject" placeholder="Subject" required>
+            <textarea id="text" placeholder  id="subject" placeholder="Subject" required>
+            <textarea id="text" placeholder="Message" required></textarea>
+            <button type="submit" class="btn">Send Email</button>
+        </form>
+        <div id="emailResult"></div>
+    </div>
+    <script src="js/main.js"></script>
+</body>
+</html>
+
