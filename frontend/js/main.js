@@ -49,19 +49,25 @@ if (loginForm) {
 }
 
 // Logout
-const logoutBtn = document.getElementById("logoutBtn")
+const logoutBtn = document.getElementById("logoutBtn");
 if (logoutBtn) {
     logoutBtn.addEventListener("click", async () => {
         try {
-            const response = await fetch(`${API_URL}/logout`)
-            const data = await response.json()
-            alert(data.message)
-            window.location.href = "index.html"
+            const response = await fetch(`${API_URL}/logout`, { credentials: "include" }); // Отправляем запрос с куками
+            const data = await response.json();
+
+            // Очищаем токен и сессию на клиенте
+            localStorage.removeItem("token");
+            sessionStorage.removeItem("token");
+
+            alert(data.message);
+            window.location.href = "index.html"; // Редирект на страницу входа
         } catch (error) {
-            console.error("Error:", error)
+            console.error("Error:", error);
         }
-    })
+    });
 }
+
 
 // QR Code Generator
 const qrForm = document.getElementById("qrForm")

@@ -8,6 +8,13 @@ import QRCode from 'qrcode';
 import nodemailer from 'nodemailer';
 import axios from 'axios';
 import fetch from 'node-fetch';
+import MongoStore from 'connect-mongo';
+import path from 'path';
+
+process.removeAllListeners('warning');
+
+// Устанавливаем strictQuery перед подключением к MongoDB
+mongoose.set('strictQuery', true);
 
 const app = express();
 
@@ -15,64 +22,132 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: true
-}));
 
-// Подключение к MongoDB
-mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('Could not connect to MongoDB', err));
+// Подключение к MongoDB с отключенными предупреждениями
+mongoose.connect(process.env.MONGODB_URI, { 
+  useNewUrlParser: true, 
+  useUnifiedTopology: true,
+  autoIndex: true // Для производительности можно установить false в продакшене
+})
+.then(() => console.log('✅ Connected to MongoDB'))
+.catch(err => console.error('❌ Could not connect to MongoDB:', err));
 
-// Модель пользователя
+// Определение моделей MongoDB
 const User = mongoose.model('User', new mongoose.Schema({
   username: String,
   password: String
 }), 'users');
 
-// Модель задач
 const Task = mongoose.model('Task', new mongoose.Schema({
   title: String,
   completed: Boolean
 }));
 
-// Раздача статических файлов (фронтенд)
+// Single session configuration with MongoStore
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({ 
+    mongoUrl: process.env.MONGODB_URI,
+    ttl: 60 * 60 // 1 hour
+  }),
+  cookie: { 
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true, 
+    maxAge: 1000 * 60 * 60 // 1 hour
+  }
+}));
+
+// Middleware для проверки аутентификации
+const requireAuth = (req, res, next) => {
+  if (!req.session.userId) {
+    return res.redirect('/login');
+  }
+  next();
+};
+
+// Промежуточное ПО для проверки защищенных статических файлов
+const checkProtectedFile = (req, res, next) => {
+  const protectedPages = ['/dashboard', '/bmi', '/crud', '/nodemailer', '/qr-code', '/weather'];
+  const requestPath = req.path;
+  
+  // Проверяем, является ли запрашиваемый путь защищенным
+  if (protectedPages.some(page => requestPath.startsWith(page))) {
+    if (!req.session.userId) {
+      return res.redirect('/login');
+    }
+  }
+  next();
+};
+
+// Применяем проверку перед раздачей статических файлов
+app.use(checkProtectedFile);
 app.use(express.static('frontend'));
 
-// Маршруты страниц
-const pages = ['/', '/register', '/login', '/dashboard', '/bmi', '/crud', '/nodemailer', '/qr-code', '/weather'];
-pages.forEach(route => app.get(route, (req, res) => res.sendFile(process.cwd() + `/frontend${route === '/' ? '/index' : route}.html`)));
+// Маршруты для публичных страниц
+app.get('/', (req, res) => {
+  res.sendFile(path.join(process.cwd(), 'frontend', 'index.html'));
+});
+
+app.get('/login', (req, res) => {
+  if (req.session.userId) {
+    return res.redirect('/dashboard');
+  }
+  res.sendFile(path.join(process.cwd(), 'frontend', 'login.html'));
+});
 
 // Регистрация
 app.post('/register', async (req, res) => {
-  const { username, password } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const user = new User({ username, password: hashedPassword });
-  await user.save();
-  res.json({ message: 'User registered successfully' });
+  try {
+    const { username, password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = new User({ username, password: hashedPassword });
+    await user.save();
+    res.json({ message: 'User registered successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error registering user' });
+  }
 });
 
 // Авторизация
 app.post('/login', async (req, res) => {
-  const { username, password } = req.body;
-  const user = await User.findOne({ username });
-  if (user && await bcrypt.compare(password, user.password)) {
-    req.session.userId = user._id;
-    res.json({ message: 'Logged in successfully' });
-  } else {
-    res.status(400).json({ message: 'Invalid credentials' });
+  try {
+    const { username, password } = req.body;
+    const user = await User.findOne({ username });
+    if (user && await bcrypt.compare(password, user.password)) {
+      req.session.userId = user._id;
+      res.json({ message: 'Logged in successfully' });
+    } else {
+      res.status(400).json({ message: 'Invalid credentials' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Error logging in' });
   }
 });
 
 // Выход
 app.get('/logout', (req, res) => {
-  req.session.destroy(err => err ? res.status(500).json({ message: 'Error logging out' }) : res.json({ message: 'Logged out successfully' }));
+  req.session.destroy(err => {
+    if (err) return res.status(500).json({ message: 'Error logging out' });
+    res.clearCookie('connect.sid', { path: '/' });
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.json({ message: 'Logged out successfully', logout: true });
+  });
 });
 
+// Защищенные маршруты
+const protectedPages = ['/dashboard', '/bmi', '/crud', '/nodemailer', '/qr-code', '/weather'];
+protectedPages.forEach(route => {
+  app.get(route, requireAuth, (req, res) => {
+    res.sendFile(path.join(process.cwd(), 'frontend', `${route.substring(1)}.html`));
+  });
+});
+
+
+
 // Генерация QR-кода
-app.post('/generate-qr', async (req, res) => {
+app.post('/generate-qr', requireAuth, async (req, res) => {
   try {
     const url = await QRCode.toDataURL(req.body.text);
     res.json({ qrCodeUrl: url });
@@ -82,7 +157,7 @@ app.post('/generate-qr', async (req, res) => {
 });
 
 // Отправка email
-app.post('/send-email', async (req, res) => {
+app.post('/send-email', requireAuth, async (req, res) => {
   const transporter = nodemailer.createTransport({
     host: "smtp.mail.me.com",
     port: 587,
@@ -157,7 +232,7 @@ async function getTimezoneData(lat, lon) {
 }
 
 // Получение информации о погоде, часовом поясе, флаге и качестве воздуха
-app.post('/get-weather', async (req, res) => {
+app.post('/get-weather', requireAuth, async (req, res) => {
   try {
     const { city } = req.body;
     console.log("Запрошен город:", city);
@@ -186,14 +261,14 @@ app.post('/get-weather', async (req, res) => {
 
 
 // CRUD задачи
-app.get('/tasks', async (req, res) => res.json(await Task.find()));
-app.post('/add-task', async (req, res) => res.json(await new Task({ title: req.body.title, completed: false }).save()));
-app.post('/update-task/:id', async (req, res) => {
+app.get('/tasks', requireAuth, async (req, res) => res.json(await Task.find()));
+app.post('/add-task', requireAuth, async (req, res) => res.json(await new Task({ title: req.body.title, completed: false }).save()));
+app.post('/update-task/:id', requireAuth, async (req, res) => {
   const task = await Task.findById(req.params.id);
   task.completed = !task.completed;
   res.json(await task.save());
 });
-app.delete('/delete-task/:id', async (req, res) => res.json(await Task.findByIdAndDelete(req.params.id) ? { message: 'Task deleted' } : { message: 'Task not found' }));
+app.delete('/delete-task/:id', requireAuth, async (req, res) => res.json(await Task.findByIdAndDelete(req.params.id) ? { message: 'Task deleted' } : { message: 'Task not found' }));
 
 // Запуск сервера
 const PORT = process.env.PORT || 3000;

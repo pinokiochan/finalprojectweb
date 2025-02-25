@@ -14,7 +14,7 @@
 * 🔹 Frontend: HTML, CSS, JavaScript, Leaflet.js for map
 * 🔹 Backend: Node.js, Express.js, MongoDB, Mongoose
 * 🔹 APIs Used: OpenWeatherMap, AccuWeather, TimeZoneDB, Nodemailer, QRCode
-* 🔹 Security: Bcrypt for password hashing, Sessions for authentication
+* 🔹 Security: Bcrypt for password hashing, Sessions for authentication, authorization before using 
 * 🔹 Package Manager: npm
 
 ## 🚀 Installation & Setup
