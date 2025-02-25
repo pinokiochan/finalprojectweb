@@ -1,21 +1,21 @@
-🌍 Full-Stack Weather App with Authentication & CRUD
-🚀 A full-stack web application with user authentication, weather forecasting, QR code generation, email sending, and task management (CRUD).
+\\ 🌍 Full-Stack Weather App with Authentication & CRUD
+\\\ 🚀 A full-stack web application with user authentication, weather forecasting, QR code generation, email sending, and task management (CRUD).
 
-🔥 Features
-✅ User Authentication (Sign Up, Login, Logout, Password Hashing)
-✅ Weather Forecast (Current weather, 5-day forecast, timezone, and map integration)
-✅ QR Code Generator (Generate QR codes from user input)
-✅ Email Sending (Send emails using Nodemailer)
-✅ BMI Calculator (Calculate Body Mass Index)
-✅ Task Manager (Create, update, and delete tasks)
-✅ Secure Backend (MongoDB, Express.js, Sessions, Bcrypt for password hashing)
+\\ 🔥 Features
+\\\ ✅ User Authentication (Sign Up, Login, Logout, Password Hashing)
+\\\ ✅ Weather Forecast (Current weather, 5-day forecast, timezone, and map integration)
+\\\ ✅ QR Code Generator (Generate QR codes from user input)
+\\\ ✅ Email Sending (Send emails using Nodemailer)
+\\\ ✅ BMI Calculator (Calculate Body Mass Index)
+\\\ ✅ Task Manager (Create, update, and delete tasks)
+\\\ ✅ Secure Backend (MongoDB, Express.js, Sessions, Bcrypt for password hashing)
 
-🛠 Tech Stack
-🔹 Frontend: HTML, CSS, JavaScript, Leaflet.js for map
-🔹 Backend: Node.js, Express.js, MongoDB, Mongoose
-🔹 APIs Used: OpenWeatherMap, AccuWeather, TimeZoneDB, Nodemailer, QRCode
-🔹 Security: Bcrypt for password hashing, Sessions for authentication
-🔹 Package Manager: npm
+\\ 🛠 Tech Stack
+\\\ 🔹 Frontend: HTML, CSS, JavaScript, Leaflet.js for map
+\\\ 🔹 Backend: Node.js, Express.js, MongoDB, Mongoose
+\\\ 🔹 APIs Used: OpenWeatherMap, AccuWeather, TimeZoneDB, Nodemailer, QRCode
+\\\ 🔹 Security: Bcrypt for password hashing, Sessions for authentication
+\\\ 🔹 Package Manager: npm
 
 🚀 Installation & Setup
 1️⃣ Clone the repository

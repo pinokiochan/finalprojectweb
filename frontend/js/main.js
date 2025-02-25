@@ -121,7 +121,6 @@ if (bmiForm) {
 // Weather, Timezone and Forecast API
 let map;
 
-// Форма погоды
 const weatherForm = document.getElementById("weatherForm");
 if (weatherForm) {
     weatherForm.addEventListener("submit", async (e) => {
@@ -140,7 +139,7 @@ if (weatherForm) {
 
             const data = await response.json();
 
-            displayWeatherInfo(data.weather);
+            displayWeatherInfo(data.weather, data.flag, data.airQuality);
             displayTimezoneInfo(data.timezone);
             displayForecastInfo(data.forecast);
             initializeMap(data.mapCoord);
@@ -152,12 +151,15 @@ if (weatherForm) {
     });
 }
 
-function displayWeatherInfo(weather) {
+function displayWeatherInfo(weather, flag, airQuality) {
     const weatherInfo = document.getElementById("weatherResult");
     const iconUrl = `http://openweathermap.org/img/wn/${weather.icon}@2x.png`;
 
+    const airQualityText = ["Good", "Fair", "Moderate", "Poor", "Very Poor"];
+
     weatherInfo.innerHTML = `
         <h2>Weather in ${weather.city}, ${weather.country}</h2>
+        <img src="${flag}" alt="Flag of ${weather.country}" style="width:100px;"/>
         <img src="${iconUrl}" alt="${weather.description}" />
         <p>Temperature: ${weather.temperature}°C</p>
         <p>Feels like: ${weather.feelsLike}°C</p>
@@ -166,6 +168,7 @@ function displayWeatherInfo(weather) {
         <p>Pressure: ${weather.pressure} hPa</p>
         <p>Wind Speed: ${weather.windSpeed} m/s</p>
         <p>Rain (last 3h): ${weather.rain !== undefined ? weather.rain : "No data"} mm</p>
+        <p>Air Quality: ${airQualityText[airQuality - 1] || "Unknown"}</p>
     `;
 }
 
@@ -202,7 +205,6 @@ function displayForecastInfo(forecast) {
 
     forecastInfo.innerHTML = forecastHtml;
 }
-
 function initializeMap(coord) {
     if (map) {
         map.remove();

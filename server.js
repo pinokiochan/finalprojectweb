@@ -101,42 +101,45 @@ app.post('/send-email', async (req, res) => {
   }
 });
 
-// Получение погоды
 async function getWeatherData(city) {
-  const response = await fetch(`http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${process.env.WEATHER_API_KEY}&units=metric`);
-  const data = await response.json();
+  const response = await axios.get(`http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${process.env.WEATHER_API_KEY}&units=metric`);
+  const data = response.data;
 
-  // Проверяем, что API вернул корректные данные
   if (!data || data.cod !== 200) {
-      console.error("Ошибка OpenWeather API:", data.message || "Неизвестная ошибка");
-      throw new Error("Ошибка получения данных о погоде");
+    throw new Error("Ошибка получения данных о погоде");
   }
 
   return {
-      city: data.name || "Unknown",
-      country: data.sys?.country || "Unknown",
-      temperature: data.main.temp,
-      feelsLike: data.main.feels_like,
-      humidity: data.main.humidity,
-      description: data.weather[0]?.description || "No description",
-      icon: data.weather[0]?.icon || "",
-      pressure: data.main.pressure,
-      windSpeed: data.wind.speed,
-      rain: data.rain ? data.rain['3h'] : 0,
-      coord: data.coord
+    city: data.name,
+    country: data.sys?.country || "Unknown",
+    countryCode: data.sys?.country || "Unknown",
+    temperature: data.main.temp,
+    feelsLike: data.main.feels_like,
+    humidity: data.main.humidity,
+    description: data.weather[0]?.description || "No description",
+    icon: data.weather[0]?.icon || "",
+    pressure: data.main.pressure,
+    windSpeed: data.wind.speed,
+    rain: data.rain ? data.rain['3h'] : 0,
+    coord: data.coord
   };
 }
 
+// Получение качества воздуха
+async function getAirQuality(lat, lon) {
+  const response = await axios.get(`http://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${process.env.WEATHER_API_KEY}`);
+  return response.data.list[0].main.aqi;
+}
 
-// Прогноз погоды
+// Получение прогноза погоды
 async function getForecastData(city) {
-  const locationResponse = await fetch(`http://dataservice.accuweather.com/locations/v1/cities/search?apikey=${process.env.ACCUWEATHER_API_KEY}&q=${city}`);
-  const locationData = await locationResponse.json();
+  const locationResponse = await axios.get(`http://dataservice.accuweather.com/locations/v1/cities/search?apikey=${process.env.ACCUWEATHER_API_KEY}&q=${city}`);
+  const locationData = locationResponse.data;
   if (!locationData.length) throw new Error("Город не найден");
 
   const locationKey = locationData[0].Key;
-  const forecastResponse = await fetch(`http://dataservice.accuweather.com/forecasts/v1/daily/5day/${locationKey}?apikey=${process.env.ACCUWEATHER_API_KEY}&metric=true`);
-  const forecastData = await forecastResponse.json();
+  const forecastResponse = await axios.get(`http://dataservice.accuweather.com/forecasts/v1/daily/5day/${locationKey}?apikey=${process.env.ACCUWEATHER_API_KEY}&metric=true`);
+  const forecastData = forecastResponse.data;
 
   return forecastData.DailyForecasts.map(day => ({
     date: day.Date,
@@ -147,29 +150,39 @@ async function getForecastData(city) {
   }));
 }
 
-// Временная зона
+// Получение информации о часовом поясе
 async function getTimezoneData(lat, lon) {
-  const response = await fetch(`http://api.timezonedb.com/v2.1/get-time-zone?key=${process.env.TIMEZONE_API_KEY}&format=json&by=position&lat=${lat}&lng=${lon}`);
-  const data = await response.json();
-  return { zoneName: data.zoneName, localTime: data.formatted };
+  const response = await axios.get(`http://api.timezonedb.com/v2.1/get-time-zone?key=${process.env.TIMEZONE_API_KEY}&format=json&by=position&lat=${lat}&lng=${lon}`);
+  return { zoneName: response.data.zoneName, localTime: response.data.formatted };
 }
 
-// API погоды + часовой пояс
+// Получение информации о погоде, часовом поясе, флаге и качестве воздуха
 app.post('/get-weather', async (req, res) => {
   try {
     const { city } = req.body;
-    console.log("Запрошен город:", city); // Для проверки, что сервер получает данные
+    console.log("Запрошен город:", city);
 
     const weatherData = await getWeatherData(city);
     const forecastData = await getForecastData(city);
     const timezoneData = await getTimezoneData(weatherData.coord.lat, weatherData.coord.lon);
+    const airQuality = await getAirQuality(weatherData.coord.lat, weatherData.coord.lon);
 
-    res.json({ weather: weatherData, forecast: forecastData, timezone: timezoneData, mapCoord: weatherData.coord });
+    const flagUrl = `https://flagcdn.com/w320/${weatherData.countryCode.toLowerCase()}.png`;
+
+    res.json({
+      weather: weatherData,
+      forecast: forecastData,
+      timezone: timezoneData,
+      airQuality,
+      flag: flagUrl,
+      mapCoord: weatherData.coord
+    });
   } catch (error) {
     console.error("Ошибка получения данных:", error.message);
     res.status(500).json({ error: error.message || "Ошибка при получении данных" });
   }
 });
+
 
 
 // CRUD задачи
