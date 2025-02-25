@@ -102,8 +102,8 @@ dir /weather-app
 
 🤝 Connect with Me
 📧 Email: pinokiochan_n@icloud.com
-🌍 Website: notyet.com
-🚀 GitHub: github.com/pinokiochan
+🌍 Website: <notyet.com>
+🚀 GitHub: <github.com/pinokiochan>
 
 >🔥 Give a ⭐ if you like this project! 🚀
 
