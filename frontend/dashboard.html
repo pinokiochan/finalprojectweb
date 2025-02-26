@@ -9,26 +9,57 @@
 <body>
     <nav>
         <ul>
-            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="dashboard.html" class="active">Dashboard</a></li>
             <li><a href="qr-code.html">QR Code</a></li>
             <li><a href="nodemailer.html">Email</a></li>
             <li><a href="bmi.html">BMI</a></li>
             <li><a href="weather.html">Weather</a></li>
-            <li><a href="crud.html">CRUD</a></li>
+            <li><a href="crud.html">Tasks</a></li>
             <li><a href="#" id="logoutBtn">Logout</a></li>
         </ul>
     </nav>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Welcome to Your Dashboard</h1>
+            <p>Choose a feature to explore from our suite of tools</p>
+        </div>
+    </section>
+    
     <div class="container">
-        <h1>Dashboard</h1>
-        <p>Welcome to your dashboard. Choose a feature to explore:</p>
-        <ul>
-            <li><a href="qr-code.html">QR Code Generator</a></li>
-            <li><a href="nodemailer.html">Email Sender</a></li>
-            <li><a href="bmi.html">BMI Calculator</a></li>
-            <li><a href="weather.html">Weather, Timezone and Forecast API</a></li>
-            <li><a href="crud.html">CRUD Operations</a></li>
-        </ul>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h3>QR Code Generator</h3>
+                <p>Create QR codes instantly for any text or URL</p>
+                <a href="qr-code.html" class="btn">Generate QR</a>
+            </div>
+            
+            <div class="feature-card">
+                <h3>Email Sender</h3>
+                <p>Send emails quickly and easily</p>
+                <a href="nodemailer.html" class="btn">Send Email</a>
+            </div>
+            
+            <div class="feature-card">
+                <h3>BMI Calculator</h3>
+                <p>Calculate your Body Mass Index</p>
+                <a href="bmi.html" class="btn">Calculate BMI</a>
+            </div>
+            
+            <div class="feature-card">
+                <h3>Weather API</h3>
+                <p>Get real-time weather updates and forecasts</p>
+                <a href="weather.html" class="btn">Check Weather</a>
+            </div>
+            
+            <div class="feature-card">
+                <h3>Task Manager</h3>
+                <p>Organize and track your tasks</p>
+                <a href="crud.html" class="btn">Manage Tasks</a>
+            </div>
+        </div>
     </div>
+    
     <script src="js/main.js"></script>
 </body>
 </html>

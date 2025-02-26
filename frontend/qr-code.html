@@ -10,22 +10,37 @@
     <nav>
         <ul>
             <li><a href="dashboard.html">Dashboard</a></li>
-            <li><a href="qr-code.html">QR Code</a></li>
+            <li><a href="qr-code.html" class="active">QR Code</a></li>
             <li><a href="nodemailer.html">Email</a></li>
             <li><a href="bmi.html">BMI</a></li>
             <li><a href="weather.html">Weather</a></li>
-            <li><a href="crud.html">CRUD</a></li>
+            <li><a href="crud.html">Tasks</a></li>
             <li><a href="#" id="logoutBtn">Logout</a></li>
         </ul>
     </nav>
+
+    <section class="hero">
+        <div class="container">
+            <h1>QR Code Generator</h1>
+            <p>Generate QR codes instantly for any text or URL</p>
+        </div>
+    </section>
+
     <div class="container">
-        <h1>QR Code Generator</h1>
-        <form id="qrForm">
-            <input type="text" id="qrText" placeholder="Enter text or URL" required>
-            <button type="submit" class="btn">Generate QR Code</button>
-        </form>
-        <div id="qrCodeContainer"></div>
+        <div class="card" style="max-width: 440px; margin: 0 auto;">
+            <form id="qrForm">
+                <div class="form-group">
+                    <label for="qrText">Text or URL</label>
+                    <input type="text" id="qrText" placeholder="Enter text or URL" required>
+                </div>
+                
+                <button type="submit" class="btn">Generate QR Code</button>
+            </form>
+            
+            <div id="qrCodeContainer" style="margin-top: 2rem;"></div>
+        </div>
     </div>
+    
     <script src="js/main.js"></script>
 </body>
 </html>

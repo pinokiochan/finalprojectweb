@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather, Timezone and News API</title>
+    <title>Weather Information</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 </head>
@@ -14,26 +14,35 @@
             <li><a href="qr-code.html">QR Code</a></li>
             <li><a href="nodemailer.html">Email</a></li>
             <li><a href="bmi.html">BMI</a></li>
-            <li><a href="weather.html">Weather</a></li>
-            <li><a href="crud.html">CRUD</a></li>
+            <li><a href="weather.html" class="active">Weather</a></li>
+            <li><a href="crud.html">Tasks</a></li>
             <li><a href="#" id="logoutBtn">Logout</a></li>
         </ul>
     </nav>
 
-    <div class="container">
-        <h1>Weather, Timezone and Forecast API</h1>
-        <form id="weatherForm">
-            <input type="text" id="city" placeholder="Enter city name" required>
-            <button type="submit" class="btn">Get Information</button>
-        </form>
+    <section class="hero">
+        <div class="container">
+            <h1>Weather Information</h1>
+            <p>Get real-time weather updates, forecasts, and timezone information</p>
+            
+            <form id="weatherForm">
+                <div class="form-group" style="max-width: 440px; margin: 0 auto;">
+                    <input type="text" id="city" placeholder="Enter city name" required>
+                    <button type="submit" class="btn">Get Weather</button>
+                </div>
+            </form>
+        </div>
+    </section>
 
+    <div class="container">
         <div id="weatherResult"></div>
         <div id="timezoneResult"></div>
         <div id="forecastResult"></div>
-        <div id="map" style="height: 400px;"></div>
+        <div id="map"></div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>
+

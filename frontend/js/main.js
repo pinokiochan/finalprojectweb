@@ -1,5 +1,28 @@
 const API_URL = "http://localhost:3000"
 
+function showToast(message, type = "default") {
+    const toast = document.createElement("div")
+    toast.className = `toast ${type}`
+    toast.textContent = message
+    document.body.appendChild(toast)
+
+    setTimeout(() => {
+        toast.style.animation = "slideOut 0.3s ease-out forwards"
+        setTimeout(() => toast.remove(), 300)
+    }, 3000)
+}
+
+function setLoading(button, isLoading) {
+    if (isLoading) {
+        button.disabled = true
+        button.classList.add("loading")
+    } else {
+        button.disabled = false
+        button.classList.remove("loading")
+    }
+}
+
+
 // Register
 const registerForm = document.getElementById("registerForm")
 if (registerForm) {
@@ -164,18 +187,42 @@ function displayWeatherInfo(weather, flag, airQuality) {
     const airQualityText = ["Good", "Fair", "Moderate", "Poor", "Very Poor"];
 
     weatherInfo.innerHTML = `
-        <h2>Weather in ${weather.city}, ${weather.country}</h2>
-        <img src="${flag}" alt="Flag of ${weather.country}" style="width:100px;"/>
-        <img src="${iconUrl}" alt="${weather.description}" />
-        <p>Temperature: ${weather.temperature}°C</p>
-        <p>Feels like: ${weather.feelsLike}°C</p>
-        <p>Description: ${weather.description}</p>
-        <p>Humidity: ${weather.humidity}%</p>
-        <p>Pressure: ${weather.pressure} hPa</p>
-        <p>Wind Speed: ${weather.windSpeed} m/s</p>
-        <p>Rain (last 3h): ${weather.rain !== undefined ? weather.rain : "No data"} mm</p>
-        <p>Air Quality: ${airQualityText[airQuality - 1] || "Unknown"}</p>
-    `;
+    <div class="weather-card">
+      <div class="text-center">
+        <img src="${flag}" alt="Flag of ${weather.country}" style="width:100px; margin-bottom:1rem"/>
+        <img src="${iconUrl}" alt="${weather.description}" class="weather-icon"/>
+        <h2 class="text-xl font-bold mb-4">${weather.city}, ${weather.country}</h2>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="text-center p-4 rounded bg-opacity-50 backdrop-blur">
+          <div class="text-3xl font-bold">${weather.temperature}°C</div>
+          <div class="text-sm text-muted">Feels like ${weather.feelsLike}°C</div>
+        </div>
+        <div class="text-center p-4 rounded bg-opacity-50 backdrop-blur">
+          <div class="text-xl">${weather.description}</div>
+          <div class="text-sm text-muted">Air Quality: ${airQualityText[airQuality - 1] || "Unknown"}</div>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
+        <div class="text-center">
+          <div class="text-sm text-muted">Humidity</div>
+          <div>${weather.humidity}%</div>
+        </div>
+        <div class="text-center">
+          <div class="text-sm text-muted">Pressure</div>
+          <div>${weather.pressure} hPa</div>
+        </div>
+        <div class="text-center">
+          <div class="text-sm text-muted">Wind Speed</div>
+          <div>${weather.windSpeed} m/s</div>
+        </div>
+        <div class="text-center">
+          <div class="text-sm text-muted">Rain (3h)</div>
+          <div>${weather.rain !== undefined ? weather.rain : "0"} mm</div>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 function displayTimezoneInfo(timezone) {
@@ -211,21 +258,29 @@ function displayForecastInfo(forecast) {
 
     forecastInfo.innerHTML = forecastHtml;
 }
+
 function initializeMap(coord) {
-    if (map) {
-        map.remove();
-    }
+    if (map) map.remove()
 
-    map = L.map('map').setView([coord.lat, coord.lon], 10);
+    map = L.map("map", {
+        center: [coord.lat, coord.lon],
+        zoom: 10,
+        zoomAnimation: true,
+    })
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors",
+    }).addTo(map)
 
-    L.marker([coord.lat, coord.lon]).addTo(map)
-        .bindPopup('City Location')
-        .openPopup();
+    const marker = L.marker([coord.lat, coord.lon]).addTo(map)
+    marker.bindPopup("City Location").openPopup()
+
+    map.flyTo([coord.lat, coord.lon], 12, {
+        duration: 1.5,
+        easeLinearity: 0.25,
+    })
 }
+
 
 
 // CRUD Operations
@@ -242,12 +297,17 @@ if (taskForm && taskList) {
             tasks.forEach((task) => {
                 const li = document.createElement("li")
                 li.innerHTML = `
-                    ${task.title}
-                    <span>
-                        <button onclick="updateTask('${task._id}')" class="btn">${task.completed ? "Undo" : "Complete"}</button>
-                        <button onclick="deleteTask('${task._id}')" class="btn">Delete</button>
-                    </span>
-                `
+                <span>${task.title}</span>
+                <div class="space-x-2">
+                  <button onclick="updateTask('${task._id}')" 
+                          class="btn ${task.completed ? "btn-secondary" : "btn-primary"}">
+                    ${task.completed ? "Undo" : "Complete"}
+                  </button>
+                  <button onclick="deleteTask('${task._id}')" class="btn btn-error">
+                    Delete
+                  </button>
+                </div>
+              `
                 taskList.appendChild(li)
             })
         } catch (error) {
